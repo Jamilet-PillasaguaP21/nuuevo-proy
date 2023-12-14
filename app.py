@@ -16,12 +16,15 @@ db = SQLAlchemy(app)
 class pokemon(db.Model):
     id: Mapped[int] = mapped_column(db.Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(db.String, nullable=False)
+    height: Mapped[float] = mapped_column(db.Float, nullable=False)
+    weight: Mapped[float] = mapped_column(db.Float, nullable=False)
+    order: Mapped[int] = mapped_column(db.Integer, nullable=False)
+    type: Mapped[str] = mapped_column(db.String, nullable=False)
+
 
 #con esta sentencia se crea las tablas 
 with app.app_context():
     db.create_all()
-
-
 
 
 def get_pokemon_data(pokemon):
@@ -31,7 +34,18 @@ def get_pokemon_data(pokemon):
 
 @app.route("/home")
 def home():
-    return render_template('pokemon.html')
+    data = get_pokemon_data('lucario')
+    pokemon={
+        'id':data.get('id'),
+        'name': data.get('name').upper(),
+        'height': data.get('height'),
+        'weight': data.get('weight'),
+        'order': data.get('order'),
+        'type': 'Estudiante',
+        'photo':data.get('sprites').get('other').get('official-artwork').get('front_default')
+            }
+    
+    return render_template('pokemon.html', pokemon=pokemon)
 
 @app.route("/detalle")
 def detalle():
@@ -42,7 +56,7 @@ def detalle():
 def insert():
     new_pokemon = 'Pikachu'
     if new_pokemon:
-            obj = pokemon(name=new_pokemon)
+            obj = pokemon(name=new_pokemon, height=1.50, weight=100, order=100, type='Normal')
             db.session.add(obj)
             db.session.commit()
     return 'Pokemon Agregado'
@@ -54,10 +68,24 @@ def select():
         print(p.name)
     return 'alo'
 
-@app.route("/select/<name>")
+@app.route("/selectbyname/<name>")
 def selectbyname(name):
     poke = pokemon.query.filter_by(name=name).first()
     return str(poke.id)
+
+#Para mostrar 
+@app.route("/selectbyid/<id>")
+def selectbyid(id):
+    poke = pokemon.query.filter_by(id=id).first()
+    return str(poke.id) + str(poke.name)
+
+#Eliminar el id de un pokemon 
+@app.route("/deletebyid/<id>")
+def deletebyid(id):
+    pokemon_a_eliminar = pokemon.query.filter_by(id=id).first()
+    db.session.delete(pokemon_a_eliminar)
+    db.session.commit()
+    return 'Pokemon Eliminado'
 
 
 if __name__ == '__main__':
