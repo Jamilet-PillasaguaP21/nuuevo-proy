@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
 import requests
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase    
@@ -32,19 +32,23 @@ def get_pokemon_data(pokemon):
     r = requests.get(url).json()
     return r 
 
-@app.route("/home")
+@app.route("/", methods=['GET', 'POST'])
 def home():
-    data = get_pokemon_data('lucario')
-    pokemon={
-        'id':data.get('id'),
-        'name': data.get('name').upper(),
-        'height': data.get('height'),
-        'weight': data.get('weight'),
-        'order': data.get('order'),
-        'type': 'Estudiante',
-        'photo':data.get('sprites').get('other').get('official-artwork').get('front_default')
-            }
-    
+    pokemon=None
+    if request.method == 'POST':
+        name_pokemon = request.form.get('nombre')
+        if name_pokemon:
+            data = get_pokemon_data(name_pokemon.lower())
+            pokemon={
+                'id':data.get('id'),
+                'name': data.get('name').upper(),
+                'height': data.get('height'),
+                'weight': data.get('weight'),
+                'order': data.get('order'),
+                'type': 'Estudiante',
+                'photo':data.get('sprites').get('other').get('official-artwork').get('front_default')
+                    }
+            
     return render_template('pokemon.html', pokemon=pokemon)
 
 @app.route("/detalle")
@@ -52,13 +56,13 @@ def detalle():
     return render_template('detalle.html')
 
 #pruebas de base de datos 
-@app.route("/insert")
-def insert():
-    new_pokemon = 'Pikachu'
+@app.route("/insert_pokemon/<pokemon>")
+def insert_pokemon(pokemon):
+    new_pokemon = pokemon
     if new_pokemon:
-            obj = pokemon(name=new_pokemon, height=1.50, weight=100, order=100, type='Normal')
-            db.session.add(obj)
-            db.session.commit()
+        obj = pokemon(pokemon)
+        db.session.add(obj)
+        db.session.commit() 
     return 'Pokemon Agregado'
 
 @app.route("/select")
