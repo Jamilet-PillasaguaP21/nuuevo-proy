@@ -46,14 +46,19 @@ def home():
                 'weight': data.get('weight'),
                 'order': data.get('order'),
                 'type': 'Estudiante',
-                'photo':data.get('sprites').get('other').get('official-artwork').get('front_default')
+                'hp': data.get('stats')[0].get('base_stat'),
+                'attack': data.get('stats')[1].get('base_stat'),
+                'defence': data.get('stats')[2].get('base_stat'),
+                'speed': data.get('stats')[5].get('base_stat'),
+                'photo':data.get('sprites').get('other').get('official-artwork').get('front_default'),
+                'photo':data.get('sprites').get('other').get('dream_world').get('front_default'),
                     }
-            
+
     return render_template('pokemon.html', pokemon=pokemon)
 
-@app.route("/detalle")
-def detalle():
-    return render_template('detalle.html')
+@app.route("/detalle/<hp>/<attack>/<defence>/<speed>/")
+def detalle(hp, attack, defence, speed):
+    return render_template('detalle.html', hp = hp, attack = attack, defence = defence, speed = speed)
 
 #pruebas de base de datos 
 @app.route("/insert_pokemon/<pokemon>")
